@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityFlow — Discover City Sports Spots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="app-header">
+        <div class="logo-area" id="logo-btn">
+            <span class="logo-badge">⚡ CITY</span>
+            <span class="logo-text">CityFlow</span>
+        </div>
+        <div class="header-actions">
+            <span class="active-city-pill" id="header-city-pill" style="display: none;">📍 Skopje</span>
+            <button class="btn btn-coral btn-sm" id="open-add-modal-btn">+ Add Spot</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="app-content">
+
+        <!-- STEP 1: HERO LANDING -->
+        <section id="step-1-hero" class="hero-section">
+            <div class="hero-overlay"></div>
+            <div class="hero-card">
+                <div class="hero-tag">EXPLORE WORLD SPORTS</div>
+                <h1 class="hero-title">Find Free Spots & Gear Anywhere</h1>
+                <p class="hero-subtitle">Enter a city to discover free basketball courts, outdoor fitness, cycling tracks, ski centers, and rentals.</p>
+                <p class="hero-error" id="spots-load-error" role="alert" hidden>Places couldn't load. Run CityFlow with a local web server, such as VS Code Live Server.</p>
+
+                <div class="search-box-wrapper">
+                    <div class="search-input-group">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="city-search-input" placeholder="Type a city (e.g. Skopje, Zurich, Rio)..." autocomplete="off">
+                        <button class="btn btn-primary" id="explore-btn">Explore →</button>
+                    </div>
+                    <div class="autocomplete-dropdown" id="city-dropdown"></div>
+                </div>
+
+                <div class="popular-cities">
+                    <span class="popular-label">Popular:</span>
+                    <button class="city-chip" data-city="Skopje">Skopje</button>
+                    <button class="city-chip" data-city="Ohrid">Ohrid</button>
+                    <button class="city-chip" data-city="Zurich">Zurich</button>
+                    <button class="city-chip" data-city="Aspen">Aspen</button>
+                    <button class="city-chip" data-city="Rio de Janeiro">Rio</button>
+                    <button class="city-chip" data-city="Tokyo">Tokyo</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: DASHBOARD -->
+        <section id="step-2-dashboard" class="dashboard-section" style="display: none;">
+            <div class="dashboard-controls">
+                <div class="search-bar-mini">
+                    <span>📍</span>
+                    <input type="text" id="dashboard-city-input" placeholder="Change City...">
+                    <button class="btn btn-secondary btn-sm" id="change-city-btn">Search</button>
+                </div>
+
+                <div class="categories-scroll" id="categories-bar">
+                    <button class="cat-pill active" data-cat="all">⚡ All Spots</button>
+                    <button class="cat-pill" data-cat="courts">🏀 Free Courts</button>
+                    <button class="cat-pill" data-cat="calisthenics">💪 Calisthenics</button>
+                    <button class="cat-pill" data-cat="cycling">🚴 Cycling Tracks</button>
+                    <button class="cat-pill" data-cat="ski">⛷️ Ski & Snow</button>
+                    <button class="cat-pill" data-cat="beach">🏖️ Beach Sports</button>
+                </div>
+
+                <div class="toggle-group">
+                    <label class="toggle-pill">
+                        <input type="checkbox" id="free-only-toggle"> 100% Free Only
+                    </label>
+                    <label class="toggle-pill">
+                        <input type="checkbox" id="rentals-only-toggle"> Rentals Available
+                    </label>
+                </div>
+            </div>
+
+            <div class="dashboard-main-layout">
+                <div class="spots-list-container">
+                    <div class="spots-header">
+                        <h2 class="section-heading" id="spots-count-heading">Sports Spots</h2>
+                        <button class="btn btn-outline btn-sm" id="back-to-home-btn">← Change City</button>
+                    </div>
+                    <div class="spots-grid" id="spots-grid"></div>
+                </div>
+
+                <div class="map-container">
+                    <div class="map-header" id="map-header">Map preview · add a Google Maps key in js/mapsConfig.js</div>
+                    <div class="map-viewport" id="map-viewport">
+                        <div class="map-grid-bg"></div>
+                        <div id="google-map-canvas" aria-label="Google map showing sports spots"></div>
+                        <div id="map-markers-layer"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL 1: RENTAL -->
+    <div class="modal-backdrop" id="rental-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="close-rental-btn">✕</button>
+            <h3 class="modal-title">🎿 Rent Equipment</h3>
+            <p class="modal-subtitle" id="rental-spot-title">Reserve sports gear directly</p>
+            <form id="rental-form">
+                <div class="form-group">
+                    <label>Duration (Hours)</label>
+                    <input type="number" id="rental-hours" min="1" max="24" value="2">
+                </div>
+                <div class="form-group">
+                    <label>Pickup Date</label>
+                    <input type="date" id="rental-date" required>
+                </div>
+                <div class="price-summary">
+                    <span>Total Price:</span>
+                    <strong id="rental-total-price">$0.00</strong>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Confirm & Reserve</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: TICKET PASS -->
+    <div class="modal-backdrop" id="ticket-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="close-ticket-btn">✕</button>
+            <h3 class="modal-title">🎟️ Event Pass Checkout</h3>
+            <p class="modal-subtitle" id="ticket-spot-title">Get your digital pass</p>
+            <div id="ticket-form-step">
+                <div class="form-group">
+                    <label>Number of Passes</label>
+                    <input type="number" id="ticket-count" min="1" max="10" value="1">
+                </div>
+                <div class="price-summary">
+                    <span>Total Amount:</span>
+                    <strong id="ticket-total-price">$0.00</strong>
+                </div>
+                <button class="btn btn-coral btn-block" id="generate-pass-btn">Book Pass & Generate QR</button>
+            </div>
+            <div id="ticket-qr-step" style="display: none; text-align: center;">
+                <div class="qr-box" id="qrcode"></div>
+                <p class="qr-hint">Scan this pass at entry</p>
+                <button class="btn btn-secondary btn-block" id="done-ticket-btn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADD SPOT -->
+    <div class="modal-backdrop" id="add-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="close-add-btn">✕</button>
+            <h3 class="modal-title">📍 Add New Sport Spot</h3>
+            <p class="modal-subtitle">Share a free court or rental center</p>
+            <form id="add-spot-form">
+                <div class="form-group">
+                    <label>Spot Name</label>
+                    <input type="text" id="add-title" placeholder="e.g. City Central Courts" required>
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="add-city" placeholder="e.g. Skopje" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="add-category">
+                        <option value="courts">🏀 Free Courts</option>
+                        <option value="calisthenics">💪 Calisthenics</option>
+                        <option value="cycling">🚴 Cycling Tracks</option>
+                        <option value="ski">⛷️ Ski & Snow</option>
+                        <option value="beach">🏖️ Beach Sports</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="add-address" placeholder="e.g. Main Park Boulevard" required>
+                </div>
+                <div class="form-group">
+                    <label>Map coordinates (optional; enter both)</label>
+                    <div class="coordinate-inputs">
+                        <input type="number" id="add-lat" min="-90" max="90" step="any" placeholder="Latitude" aria-label="Latitude">
+                        <input type="number" id="add-lng" min="-180" max="180" step="any" placeholder="Longitude" aria-label="Longitude">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit Spot</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/spots.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/mapsConfig.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
