@@ -32,9 +32,9 @@
         <section id="step-1-hero" class="hero-section">
             <div class="hero-overlay"></div>
             <div class="hero-card">
-                <div class="hero-tag">EXPLORE WORLD SPORTS</div>
-                <h1 class="hero-title">Find Free Spots & Gear Anywhere</h1>
-                <p class="hero-subtitle">Enter a city to discover free basketball courts, outdoor fitness, cycling tracks, ski centers, and rentals.</p>
+                <div class="hero-tag">EXPLORE YOUR CITY</div>
+                <h1 class="hero-title">Find Great Places Around You</h1>
+                <p class="hero-subtitle">Discover famous free places, courts, outdoor trails, healthy food, restaurants, and bars.</p>
                 <p class="hero-error" id="spots-load-error" role="alert" hidden>Places couldn't load. Run CityFlow with a local web server, such as VS Code Live Server.</p>
 
                 <div class="search-box-wrapper">
@@ -54,6 +54,18 @@
                     <button class="city-chip" data-city="Aspen">Aspen</button>
                     <button class="city-chip" data-city="Rio de Janeiro">Rio</button>
                     <button class="city-chip" data-city="Tokyo">Tokyo</button>
+                    <button class="city-chip" data-city="New York">New York</button>
+                    <button class="city-chip" data-city="Los Angeles">Los Angeles</button>
+                    <button class="city-chip" data-city="Paris">Paris</button>
+                    <button class="city-chip" data-city="Rome">Rome</button>
+                    <button class="city-chip" data-city="London">London</button>
+                    <button class="city-chip" data-city="Berlin">Berlin</button>
+                    <button class="city-chip" data-city="Sydney">Sydney</button>
+                    <button class="city-chip" data-city="Melbourne">Melbourne</button>
+                    <button class="city-chip" data-city="Shanghai">Shanghai</button>
+                    <button class="city-chip" data-city="Barcelona">Barcelona</button>
+                    <button class="city-chip" data-city="Madrid">Madrid</button>
+                    <button class="city-chip" data-city="Lisbon">Lisbon</button>
                 </div>
             </div>
         </section>
@@ -74,6 +86,10 @@
                     <button class="cat-pill" data-cat="cycling">🚴 Cycling Tracks</button>
                     <button class="cat-pill" data-cat="ski">⛷️ Ski & Snow</button>
                     <button class="cat-pill" data-cat="beach">🏖️ Beach Sports</button>
+                    <button class="cat-pill" data-cat="free_places">🌳 Free Places</button>
+                    <button class="cat-pill" data-cat="restaurant">🍽️ Restaurants</button>
+                    <button class="cat-pill" data-cat="healthy_food">🥗 Healthy Food</button>
+                    <button class="cat-pill" data-cat="bars">🍸 Bars</button>
                 </div>
 
                 <div class="toggle-group">
@@ -89,7 +105,7 @@
             <div class="dashboard-main-layout">
                 <div class="spots-list-container">
                     <div class="spots-header">
-                        <h2 class="section-heading" id="spots-count-heading">Sports Spots</h2>
+                        <h2 class="section-heading" id="spots-count-heading">Places</h2>
                         <button class="btn btn-outline btn-sm" id="back-to-home-btn">← Change City</button>
                     </div>
                     <div class="spots-grid" id="spots-grid"></div>
@@ -179,6 +195,10 @@
                         <option value="cycling">🚴 Cycling Tracks</option>
                         <option value="ski">⛷️ Ski & Snow</option>
                         <option value="beach">🏖️ Beach Sports</option>
+                        <option value="free_places">🌳 Free Places</option>
+                        <option value="restaurant">🍽️ Restaurants</option>
+                        <option value="healthy_food">🥗 Healthy Food</option>
+                        <option value="bars">🍸 Bars</option>
                     </select>
                 </div>
                 <div class="form-group">

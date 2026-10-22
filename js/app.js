@@ -26,12 +26,41 @@ function renderCityDropdown() {
         const matches = cities.filter(c => c.toLowerCase().includes(query));
 
         if (matches.length) {
-            cityDropdown.innerHTML = matches.map(c => `<div class="dropdown-item" onclick="selectCity('${c}')">${c}</div>`).join('');
+            cityDropdown.innerHTML = matches.map(c =>
+                `<button type="button" class="dropdown-item" data-city="${escapeHTML(c)}">${escapeHTML(c)}</button>`
+            ).join('');
+            cityDropdown.querySelectorAll(".dropdown-item").forEach(item => {
+                item.addEventListener("click", () => selectCity(item.dataset.city));
+            });
             cityDropdown.style.display = "block";
         } else {
             cityDropdown.style.display = "none";
         }
     });
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
+function getCategoryLabel(category) {
+    return {
+        courts: "Sports court",
+        calisthenics: "Outdoor fitness",
+        cycling: "Trail & cycling",
+        ski: "Ski & snow",
+        beach: "Beach sports",
+        free_places: "Free place",
+        restaurant: "Restaurant",
+        healthy_food: "Healthy food",
+        bars: "Bar"
+    }[category] || "Place";
 }
 
 function setupEventListeners() {
@@ -55,6 +84,12 @@ function setupEventListeners() {
 
     document.getElementById("free-only-toggle").addEventListener("change", renderSpots);
     document.getElementById("rentals-only-toggle").addEventListener("change", renderSpots);
+    spotsGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-spot-action]");
+        if (!button) return;
+        if (button.dataset.spotAction === "rental") openRentalModal(button.dataset.spotId);
+        if (button.dataset.spotAction === "ticket") openTicketModal(button.dataset.spotId);
+    });
 
     document.getElementById("logo-btn").addEventListener("click", resetToHero);
     document.getElementById("back-to-home-btn").addEventListener("click", resetToHero);
@@ -145,28 +180,30 @@ function renderSpots() {
         return matchCity && matchCat && matchFree && matchRent;
     });
 
-    document.getElementById("spots-count-heading").textContent = `${filtered.length} Sports Spots in ${selectedCity}`;
+    const placeLabel = filtered.length === 1 ? "Place" : "Places";
+    document.getElementById("spots-count-heading").textContent = `${filtered.length} ${placeLabel} in ${selectedCity}`;
     updateSpotMap(filtered, selectedCity);
 
     if (filtered.length === 0) {
-        spotsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted);">No spots found in ${selectedCity}. Try adding one!</p>`;
+        spotsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted);">No places found in ${escapeHTML(selectedCity)}. Try another category or add a place.</p>`;
         return;
     }
 
     spotsGrid.innerHTML = filtered.map(s => `
         <div class="spot-card">
             <div class="card-img-wrapper">
-                <img src="${s.image_url}" alt="${s.title}">
+                <img src="${escapeHTML(s.image_url || "")}" alt="${escapeHTML(s.title)}" loading="lazy" decoding="async" fetchpriority="low">
                 ${s.is_free ? '<span class="free-badge">FREE</span>' : ''}
-                <span class="rating-badge">★ ${s.rating}</span>
+                ${s.is_sample ? '<span class="sample-badge">SAMPLE</span>' : Number.isFinite(Number(s.rating)) ? `<span class="rating-badge">★ ${escapeHTML(s.rating)}</span>` : ''}
             </div>
             <div class="card-body">
-                <h3 class="card-title">${s.title}</h3>
-                <p class="card-address">📍 ${s.address}</p>
-                <p class="card-desc">${s.description}</p>
+                <span class="place-category">${escapeHTML(getCategoryLabel(s.category))}</span>
+                <h3 class="card-title">${escapeHTML(s.title)}</h3>
+                <p class="card-address">📍 ${escapeHTML(s.address)}</p>
+                <p class="card-desc">${escapeHTML(s.description)}</p>
                 <div class="card-actions">
-                    ${s.has_rental ? `<button class="btn btn-secondary btn-sm" onclick="openRentalModal('${s.id}')">🎿 Rent Gear</button>` : ''}
-                    ${s.has_tickets ? `<button class="btn btn-coral btn-sm" onclick="openTicketModal('${s.id}')">🎟️ Book Pass</button>` : ''}
+                    ${s.has_rental ? `<button class="btn btn-secondary btn-sm" data-spot-action="rental" data-spot-id="${escapeHTML(s.id)}">🎿 Rent Gear</button>` : ''}
+                    ${s.has_tickets ? `<button class="btn btn-coral btn-sm" data-spot-action="ticket" data-spot-id="${escapeHTML(s.id)}">🎟️ Book Pass</button>` : ''}
                 </div>
             </div>
         </div>
