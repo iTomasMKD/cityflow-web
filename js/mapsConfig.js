@@ -1,1 +1,1 @@
-window.GOOGLE_MAPS_API_KEY = "";
+window.CITYFLOW_MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";

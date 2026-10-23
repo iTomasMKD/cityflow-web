@@ -8,6 +8,7 @@ const cityDropdown = document.getElementById("city-dropdown");
 const dashboardCityInput = document.getElementById("dashboard-city-input");
 const spotsGrid = document.getElementById("spots-grid");
 const headerCityPill = document.getElementById("header-city-pill");
+let activeCitySuggestion = -1;
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchSpots().catch(error => {
@@ -19,24 +20,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function renderCityDropdown() {
     citySearchInput.addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase();
-        if (!query) { cityDropdown.style.display = "none"; return; }
-        
+        const query = e.target.value.trim().toLowerCase();
+        if (!query) {
+            hideCityDropdown();
+            return;
+        }
+
         const cities = [...new Set(spotsData.map(s => s.city))];
-        const matches = cities.filter(c => c.toLowerCase().includes(query));
+        const matches = cities
+            .filter(city => city.toLowerCase().includes(query))
+            .sort((a, b) => {
+                const aStartsWithQuery = a.toLowerCase().startsWith(query);
+                const bStartsWithQuery = b.toLowerCase().startsWith(query);
+                return Number(bStartsWithQuery) - Number(aStartsWithQuery) || a.localeCompare(b);
+            })
+            .slice(0, 5);
 
         if (matches.length) {
-            cityDropdown.innerHTML = matches.map(c =>
-                `<button type="button" class="dropdown-item" data-city="${escapeHTML(c)}">${escapeHTML(c)}</button>`
+            cityDropdown.innerHTML = matches.map((city, index) =>
+                `<button type="button" class="dropdown-item" id="city-suggestion-${index}" role="option" aria-selected="false" data-city="${escapeHTML(city)}">${escapeHTML(city)}</button>`
             ).join('');
             cityDropdown.querySelectorAll(".dropdown-item").forEach(item => {
                 item.addEventListener("click", () => selectCity(item.dataset.city));
             });
             cityDropdown.style.display = "block";
+            citySearchInput.setAttribute("aria-expanded", "true");
+            activeCitySuggestion = -1;
         } else {
-            cityDropdown.style.display = "none";
+            hideCityDropdown();
         }
     });
+
+    citySearchInput.addEventListener("keydown", event => {
+        const suggestions = cityDropdown.querySelectorAll(".dropdown-item");
+        if (!suggestions.length || cityDropdown.style.display === "none") return;
+
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            const direction = event.key === "ArrowDown" ? 1 : -1;
+            setActiveCitySuggestion((activeCitySuggestion + direction + suggestions.length) % suggestions.length);
+        } else if (event.key === "Enter" && activeCitySuggestion >= 0) {
+            event.preventDefault();
+            suggestions[activeCitySuggestion].click();
+        } else if (event.key === "Escape") {
+            hideCityDropdown();
+        }
+    });
+}
+
+function setActiveCitySuggestion(index) {
+    const suggestions = cityDropdown.querySelectorAll(".dropdown-item");
+    activeCitySuggestion = index;
+    suggestions.forEach((suggestion, suggestionIndex) => {
+        const isActive = suggestionIndex === index;
+        suggestion.classList.toggle("active", isActive);
+        suggestion.setAttribute("aria-selected", String(isActive));
+    });
+    citySearchInput.setAttribute("aria-activedescendant", `city-suggestion-${index}`);
+}
+
+function hideCityDropdown() {
+    cityDropdown.style.display = "none";
+    citySearchInput.setAttribute("aria-expanded", "false");
+    citySearchInput.removeAttribute("aria-activedescendant");
+    activeCitySuggestion = -1;
 }
 
 function escapeHTML(value) {
@@ -152,7 +199,7 @@ function selectCity(cityName) {
     selectedCity = cityName;
     citySearchInput.value = cityName;
     dashboardCityInput.value = cityName;
-    cityDropdown.style.display = "none";
+    hideCityDropdown();
 
     step1Hero.style.display = "none";
     step2Dashboard.style.display = "block";

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
@@ -40,10 +41,10 @@
                 <div class="search-box-wrapper">
                     <div class="search-input-group">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="city-search-input" placeholder="Type a city (e.g. Skopje, Zurich, Rio)..." autocomplete="off">
+                        <input type="text" id="city-search-input" placeholder="Where do you want to explore? Try Skopje..." aria-label="Search for a city to explore" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="city-dropdown">
                         <button class="btn btn-primary" id="explore-btn">Explore →</button>
                     </div>
-                    <div class="autocomplete-dropdown" id="city-dropdown"></div>
+                    <div class="autocomplete-dropdown" id="city-dropdown" role="listbox" aria-label="City suggestions"></div>
                 </div>
 
                 <div class="popular-cities">
@@ -75,7 +76,7 @@
             <div class="dashboard-controls">
                 <div class="search-bar-mini">
                     <span>📍</span>
-                    <input type="text" id="dashboard-city-input" placeholder="Change City...">
+                    <input type="text" id="dashboard-city-input" placeholder="Search another city..." aria-label="Search for another city">
                     <button class="btn btn-secondary btn-sm" id="change-city-btn">Search</button>
                 </div>
 
@@ -112,10 +113,10 @@
                 </div>
 
                 <div class="map-container">
-                    <div class="map-header" id="map-header">Map preview · add a Google Maps key in js/mapsConfig.js</div>
+                    <div class="map-header" id="map-header">Map</div>
                     <div class="map-viewport" id="map-viewport">
                         <div class="map-grid-bg"></div>
-                        <div id="google-map-canvas" aria-label="Google map showing sports spots"></div>
+                        <div id="city-map" aria-label="Map showing places"></div>
                         <div id="map-markers-layer"></div>
                     </div>
                 </div>
@@ -221,6 +222,7 @@
     <script src="js/spots.js"></script>
     <script src="js/modals.js"></script>
     <script src="js/mapsConfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
     <script src="js/maps.js"></script>
     <script src="js/app.js"></script>
 </body>
